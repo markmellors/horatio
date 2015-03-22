@@ -6,6 +6,7 @@ const int TRIGGER_PIN = 12;
 const int ECHO_PIN = 11;
 const int MAX_DISTANCE = 50;
 
+// Instance of ultrasonic detector
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
 
 unsigned long firstSeen = 0;
@@ -14,8 +15,26 @@ boolean isRunning = false;
 
 // Waving
 const int NUMBER_OF_WAVES = 3;
-int endStopDegrees = 60;
-int waveTime = 500;
+// degrees of deflection from WAVE_HOME
+// for left & right side of wave
+int waveDeflect = 10;
+// Time to allow for each wave (ms)
+int waveTime = 1000;
+// home point for wave serv0 (deg)
+const int WAVE_HOME = 95;
+// centre point for wave action (deg)
+const int WAVE_CENTRE = 95;
+
+const int NUMBER_OF_SHAKES = 3;
+// degrees of deflection from SHAKE_HOME
+// for up & down portion of shake
+int shakeDeflect = 10;
+// Time to allow for each wave (ms)
+int shakeTime = 1000;
+// home point for wave serv0 (deg)
+const int SHAKE_HOME = 150;
+// centre point for wave action (deg)
+const int SHAKE_CENTRE = 60;
 
 // Servos
 Servo waveServo;
@@ -24,9 +43,8 @@ Servo shakeServo;
 void setup() {
     Serial.begin(115200);
     waveServo.attach(9);
-    waveServo.write(90);
     shakeServo.attach(8);
-    shakeServo.write(90);
+    goHome();
 }
 
 void loop() {
@@ -37,7 +55,7 @@ void loop() {
     // If we have something in range,
     // and we're not already doing so, wave;
     if(doThings){
-    int waveOrShake = random(100);
+    int waveOrShake = 10; //random(100);
         if (waveOrShake > 50) {
             shake(distance);
             Serial.println("Shake hands");
@@ -45,6 +63,10 @@ void loop() {
             wave(distance);
             Serial.println("waving");
         }
+        delay(1000);
+        goHome();
+    } else {
+        goHome();
     }
 }
 
@@ -81,38 +103,34 @@ int getDistance(){
     return distance;
 }
 
-void reset(){
-    waveServo.write(90);
-    shakeServo.write(90);
-    delay(15);
+void goHome(){
+    waveServo.write(WAVE_HOME);
+    shakeServo.write(SHAKE_HOME);
+    delay(1000);
 }
 
 void wave(int uS){
     isRunning = true;
-    Serial.print("Distance:");
-    Serial.println(uS);
     for (int n=0; n < NUMBER_OF_WAVES; n++){
-        waveServo.write(180 - endStopDegrees);
+        waveServo.write(WAVE_CENTRE + waveDeflect);
         delay(waveTime);
-        waveServo.write(0 + endStopDegrees);
+        waveServo.write(WAVE_CENTRE - waveDeflect);
         delay(waveTime);
     }
-    waveServo.write(90);
+    waveServo.write(WAVE_CENTRE);
     delay(waveTime);
     isRunning = false;
 }
 
 void shake(int uS){
     isRunning = true;
-    Serial.print("Distance:");
-    Serial.println(uS);
-    for (int n=0; n < NUMBER_OF_WAVES; n++){
-        shakeServo.write(180 - endStopDegrees);
-        delay(waveTime);
-        shakeServo.write(0 + endStopDegrees);
-        delay(waveTime);
+    for (int n=0; n < NUMBER_OF_SHAKES; n++){
+        shakeServo.write(SHAKE_CENTRE - shakeDeflect);
+        delay(shakeTime);
+        shakeServo.write(SHAKE_CENTRE + shakeDeflect);
+        delay(shakeTime);
     }
-    shakeServo.write(90);
-    delay(waveTime);
+    shakeServo.write(SHAKE_CENTRE);
+    delay(shakeTime);
     isRunning = false;
 }
