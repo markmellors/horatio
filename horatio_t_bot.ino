@@ -8,34 +8,70 @@ const int MAX_DISTANCE = 50;
 
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
 
-boolean isWaving = false;
+unsigned long firstSeen = 0;
+const unsigned long DWELL_TIME = 3000;
+boolean isRunning = false;
 
 // Waving
 const int NUMBER_OF_WAVES = 3;
-int endStopDegrees = 30;
+int endStopDegrees = 60;
 int waveTime = 500;
 
 // Servos
-Servo myservo;
+Servo waveServo;
+Servo shakeServo;
 
 void setup() {
     Serial.begin(115200);
-    myservo.attach(9);
-    myservo.write(90);
+    waveServo.attach(9);
+    waveServo.write(90);
+    shakeServo.attach(8);
+    shakeServo.write(90);
 }
 
 void loop() {
     delay(50);
     int distance = getDistance();
+    bool doThings = shouldDoThings(distance);
 
     // If we have something in range,
     // and we're not already doing so, wave;
-    if (!isWaving && distance > 0) {
-        isWaving = true;
-        Serial.print("waving");
-        Serial.println(distance);
-        wave(distance);
-        isWaving = false;
+    if(doThings){
+    int waveOrShake = random(100);
+        if (waveOrShake > 50) {
+            shake(distance);
+            Serial.println("Shake hands");
+        } else {
+            wave(distance);
+            Serial.println("waving");
+        }
+    }
+}
+
+bool shouldDoThings(int distance){
+    unsigned long now = millis();
+
+    if(distance > 0){
+        // If this is the first time we're seeing a ping
+        // Record the time and continue
+        if (firstSeen == 0){
+            firstSeen = now;
+            return false;
+        }
+        // If more than DWELL_TIME has elapsed with continous
+        // pings, then do things
+
+        if ((now - firstSeen) > DWELL_TIME){
+            firstSeen = 0;
+            return true;
+        }
+
+        // Keep on looping
+        return false;
+    } else {
+        // No ping detected. reset firstSeen and return False
+        firstSeen = 0;
+        return false;
     }
 }
 
@@ -45,17 +81,38 @@ int getDistance(){
     return distance;
 }
 
+void reset(){
+    waveServo.write(90);
+    shakeServo.write(90);
+    delay(15);
+}
+
 void wave(int uS){
-    isWaving = true;
+    isRunning = true;
     Serial.print("Distance:");
     Serial.println(uS);
     for (int n=0; n < NUMBER_OF_WAVES; n++){
-        myservo.write(180 - endStopDegrees);
+        waveServo.write(180 - endStopDegrees);
         delay(waveTime);
-        myservo.write(0 + endStopDegrees);
+        waveServo.write(0 + endStopDegrees);
         delay(waveTime);
     }
-    myservo.write(90);
+    waveServo.write(90);
     delay(waveTime);
-    isWaving = false;
+    isRunning = false;
+}
+
+void shake(int uS){
+    isRunning = true;
+    Serial.print("Distance:");
+    Serial.println(uS);
+    for (int n=0; n < NUMBER_OF_WAVES; n++){
+        shakeServo.write(180 - endStopDegrees);
+        delay(waveTime);
+        shakeServo.write(0 + endStopDegrees);
+        delay(waveTime);
+    }
+    shakeServo.write(90);
+    delay(waveTime);
+    isRunning = false;
 }
