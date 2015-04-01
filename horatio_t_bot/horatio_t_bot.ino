@@ -37,7 +37,7 @@ const int SHAKE_HOME = 650;
 const int SHAKE_CENTRE = 925;
 const int SHAKE_CENTRE_FOR_WAVE = 1600;
 // home point for wrist servo (us)
-const int WRIST_HOME = 1465;   //600=palm down 1000=thumb right, 1465=thumb and little figner level, 1500=thumb left 2000=palm up  2200=palm right 2600=thumb down
+const int WRIST_HOME = 1465;   //600=palm down 1000=thumb right, 1465=thumb and little finger level, 1500=thumb left 2000=palm up  2200=palm right 2600=thumb down
 // centre point for wave action (us)
 const int WRIST_CENTRE = 1600;
 const int WRIST_CENTRE_FOR_WAVE = 1420;
@@ -56,10 +56,8 @@ Servo shakeServo;
 Servo wristServo;
 
 void setup() {
-  //wait on power up, so that we can unplug the programmign cable and plug in the power supply. we don't want to try to run 3 servos with a 1A stall each from a usb socket do we...
-  delay(3000);
-  
-//    Serial.begin(115200);
+  //wait on power up, so that we can unplug the programming cable and plug in the power supply. we don't want to try to run 3 servos with a 1A stall each from a usb socket do we...
+    delay(3000);
     waveServo.attach(waveServoPin);
     shakeServo.attach(shakeServoPin);
     wristServo.attach(wristServoPin);
@@ -76,10 +74,8 @@ void loop() {
         int waveOrShake = random(100);
         if (waveOrShake > 50) {
             shake(distance);
-    //        Serial.println("Shake hands");
         } else {
             wave(distance);
-  //          Serial.println("waving");
         }
         delay(1000);
         goHome();
