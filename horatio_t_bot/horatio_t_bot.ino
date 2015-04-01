@@ -15,26 +15,33 @@ boolean isRunning = false;
 
 // Waving
 const int NUMBER_OF_WAVES = 3;
-// degrees of deflection from WAVE_HOME
+// Microseconds of deflection from WAVE_HOME
 // for left & right side of wave
-int waveDeflect = 10;
+int waveDeflect = 150;
 // Time to allow for each wave (ms)
 int waveTime = 1000;
-// home point for wave serv0 (deg)
-const int WAVE_HOME = 95;
-// centre point for wave action (deg)
-const int WAVE_CENTRE = 95;
+// home point for wave servo (us)
+const int WAVE_HOME = 1500;
+// centre point for wave action (us)
+const int WAVE_CENTRE = 1500;
 
 const int NUMBER_OF_SHAKES = 3;
-// degrees of deflection from SHAKE_HOME
+// microseconds of deflection from SHAKE_HOME
 // for up & down portion of shake
-int shakeDeflect = 10;
+int shakeDeflect = 200;
 // Time to allow for each wave (ms)
 int shakeTime = 1000;
-// home point for wave serv0 (deg)
-const int SHAKE_HOME = 150;
-// centre point for wave action (deg)
-const int SHAKE_CENTRE = 60;
+// home point for wave servo (us)
+const int SHAKE_HOME = 700;
+// centre point for wave action (us)
+const int SHAKE_CENTRE = 900;
+
+// home point for wrist servo (us)
+const int WRIST_HOME = 1600;
+// centre point for wave action (us)
+const int WRIST_CENTRE = 1600;
+
+//servo definitions
 const int wristServoPin = 1;
 const int shakeServoPin = 2;
 const int waveServoPin = 5;
@@ -48,6 +55,9 @@ Servo shakeServo;
 Servo wristServo;
 
 void setup() {
+  //wait on power up, so that we can unplug the programmign cable and plug in the power supply. we don't want to try to run 3 servos with a 1A stall each from a usb socket do we...
+  delay(3000);
+  
     Serial.begin(115200);
     waveServo.attach(waveServoPin);
     shakeServo.attach(shakeServoPin);
@@ -112,20 +122,21 @@ int getDistance(){
 }
 
 void goHome(){
-    waveServo.write(WAVE_HOME);
-    shakeServo.write(SHAKE_HOME);
+    waveServo.writeMicroseconds(WAVE_HOME);
+    shakeServo.writeMicroseconds(SHAKE_HOME);
+    wristServo.writeMicroseconds(WRIST_HOME);
     delay(1000);
 }
 
 void wave(int uS){
     isRunning = true;
     for (int n=0; n < NUMBER_OF_WAVES; n++){
-        waveServo.write(WAVE_CENTRE + waveDeflect);
+        waveServo.writeMicroseconds(WAVE_CENTRE + waveDeflect);
         delay(waveTime);
-        waveServo.write(WAVE_CENTRE - waveDeflect);
+        waveServo.writeMicroseconds(WAVE_CENTRE - waveDeflect);
         delay(waveTime);
     }
-    waveServo.write(WAVE_CENTRE);
+    waveServo.writeMicroseconds(WAVE_CENTRE);
     delay(waveTime);
     isRunning = false;
 }
@@ -133,12 +144,12 @@ void wave(int uS){
 void shake(int uS){
     isRunning = true;
     for (int n=0; n < NUMBER_OF_SHAKES; n++){
-        shakeServo.write(SHAKE_CENTRE - shakeDeflect);
+        shakeServo.writeMicroseconds(SHAKE_CENTRE - shakeDeflect);
         delay(shakeTime);
-        shakeServo.write(SHAKE_CENTRE + shakeDeflect);
+        shakeServo.writeMicroseconds(SHAKE_CENTRE + shakeDeflect);
         delay(shakeTime);
     }
-    shakeServo.write(SHAKE_CENTRE);
+    shakeServo.writeMicroseconds(SHAKE_CENTRE);
     delay(shakeTime);
     isRunning = false;
 }
