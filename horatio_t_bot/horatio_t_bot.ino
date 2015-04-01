@@ -2,8 +2,8 @@
 #include "Servo.h"
 
 // Ultrasonic detection stuff
-const int TRIGGER_PIN = 12;
-const int ECHO_PIN = 11;
+const int TRIGGER_PIN = 3;
+const int ECHO_PIN = 4;
 const int MAX_DISTANCE = 50;
 
 // Instance of ultrasonic detector
@@ -35,15 +35,23 @@ int shakeTime = 1000;
 const int SHAKE_HOME = 150;
 // centre point for wave action (deg)
 const int SHAKE_CENTRE = 60;
+const int wristServoPin = 1;
+const int shakeServoPin = 2;
+const int waveServoPin = 5;
+
+
+
 
 // Servos
 Servo waveServo;
 Servo shakeServo;
+Servo wristServo;
 
 void setup() {
     Serial.begin(115200);
-    waveServo.attach(9);
-    shakeServo.attach(8);
+    waveServo.attach(waveServoPin);
+    shakeServo.attach(shakeServoPin);
+    wristServo.attach(wristServoPin);
     goHome();
 }
 
