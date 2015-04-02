@@ -10,7 +10,7 @@ const int MAX_DISTANCE = 150;
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
 
 unsigned long firstSeen = 0;
-const unsigned long DWELL_TIME = 3000;
+const unsigned long DWELL_TIME = 1000;
 boolean isRunning = false;
 
 // Waving
@@ -71,13 +71,18 @@ void loop() {
     // If we have something in range,
     // and we're not already doing so, wave;
     if(doThings){
-        int waveOrShake = random(100);
+      //reconnect the servos so they can move
+      waveServo.attach(waveServoPin);
+      shakeServo.attach(shakeServoPin);
+      //wait for them to reset
+      delay(50);
+      int waveOrShake = random(100);
         if (waveOrShake > 50) {
             shake(distance);
         } else {
             wave(distance);
         }
-        delay(1000);
+        delay(500);
         goHome();
     } else {
         goHome();
@@ -122,7 +127,11 @@ void goHome(){
     waveServo.writeMicroseconds(WAVE_HOME);
     shakeServo.writeMicroseconds(SHAKE_HOME);
     wristServo.writeMicroseconds(WRIST_HOME);
-    delay(1000);
+    delay(2000);
+    //disconnect the servos to let them cool down
+    waveServo.detach();
+    shakeServo.detach();
+    delay(20);
 }
 
 void wave(int uS){
@@ -159,6 +168,7 @@ void shake(int uS){
         delay(shakeTime);
     }
     shakeServo.writeMicroseconds(SHAKE_CENTRE);
+    //wait long enough for arm to drop down before powering off
     delay(shakeTime);
     isRunning = false;
 }
